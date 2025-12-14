@@ -52,18 +52,18 @@ Mastering these shortcuts is the key to maximizing your efficiency with Spotligh
 Type these prefixes in the search bar to filter results or switch modes:
 
 *   **Resource Filters**
-    *   `-gd`: Search scripts only
-    *   `-sc`: Search scenes only
-    *   `-img`: Search images only
+	*   `-gd`: Search scripts only
+	*   `-sc`: Search scenes only
+	*   `-img`: Search images only
 *   **Common Commands**
-    *   `-new`: Create resources (Script, Shader, etc.)
-    *   `-scene`: Current scene actions (Run, Save, Reload)
-    *   `-quit`: Quit Editor
-    *   `-reload`: Reload Project
-    *   `-fs`: Toggle Fullscreen
+	*   `-new`: Create resources (Script, Shader, etc.)
+	*   `-scene`: Current scene actions (Run, Save, Reload)
+	*   `-quit`: Quit Editor
+	*   `-reload`: Reload Project
+	*   `-fs`: Toggle Fullscreen
 *   **Advanced**
-    *   `-config`: Open Plugin Settings
-    *   `-track`: Search tracked nodes
+	*   `-config`: Open Plugin Settings
+	*   `-track`: Search tracked nodes
 
 ---
 
@@ -82,4 +82,3 @@ Type these prefixes in the search bar to filter results or switch modes:
 
 ---
 *Made with ❤️ for Godot Developers.*
-

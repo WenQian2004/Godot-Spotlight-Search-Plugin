@@ -8,6 +8,15 @@
 
 config_version=5
 
+[addons]
+
+spotlight_search/config/shortcut_keycode=81
+spotlight_search/config/shortcut_use_alt=true
+spotlight_search/config/shortcut_use_ctrl=false
+spotlight_search/config/shortcut_use_shift=false
+spotlight_search/command_history=Array[String](["-config -plugin_setting"])
+spotlight_search/favorites=Array[String]([])
+
 [application]
 
 config/name="SpotlightSearchPlugin"

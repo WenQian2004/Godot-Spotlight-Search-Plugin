@@ -35,6 +35,5 @@ static func show_toast(message: String, type: String = "info") -> void:
 static func _get_spotlight_window() -> Node:
 	# Helper to find the window instance in the editor tree
 	var base = EditorInterface.get_base_control()
-	# This is a bit hacky, relying on the plugin to name it or hold it.
-	# Better: The plugin registers the window instance somewhere globally accessible or we find it by group.
+	
 	return base.find_child("SpotlightWindow", true, false)
