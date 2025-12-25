@@ -1,11 +1,12 @@
 # Normalize EOL for all files that Git considers text files.
 * text=auto eol=lf
 
-# Exclude files from git archive (Download ZIP) to keep the release clean
-.editorconfig export-ignore
-.gitattributes export-ignore
-.gitignore export-ignore
-project.godot export-ignore
-icon.svg export-ignore
-icon.svg.import export-ignore
-img/ export-ignore
+# Ignore everything by default
+* export-ignore
+
+# Whitelist addons directory (include in git archive/zip)
+addons/ -export-ignore
+addons/**/* -export-ignore
+
+# Optional: You might want to include the License
+LICENSE -export-ignore
