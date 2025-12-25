@@ -1,0 +1,58 @@
+[gd_scene load_steps=4 format=3 uid="uid://dp6y63v444ta1"]
+
+[ext_resource type="Script" uid="uid://b4axg0ohqjrrg" path="res://addons/spotlight_search/ui/components/action_button/action_button.gd" id="1_vjdjg"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_34e2h"]
+bg_color = Color(0.2, 0.2, 0.2, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.33333334, 0.33333334, 0.33333334, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vjdjg"]
+bg_color = Color(0.26666668, 0.26666668, 0.26666668, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.33333334, 0.33333334, 0.33333334, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="ActionButton" type="Button"]
+anchors_preset = -1
+anchor_right = 0.014
+anchor_bottom = 0.039
+offset_right = -16.128
+offset_bottom = -25.272001
+size_flags_vertical = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_34e2h")
+theme_override_styles/hover = SubResource("StyleBoxFlat_vjdjg")
+text = "\"\""
+script = ExtResource("1_vjdjg")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Text" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+theme_override_font_sizes/font_size = 12
+
+[node name="ShortcutLabel" type="Label" parent="HBoxContainer" groups=["spotlight_tracked"]]
+layout_mode = 2
+size_flags_horizontal = 8
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+theme_override_font_sizes/font_size = 12

@@ -1,0 +1,53 @@
+[gd_scene load_steps=3 format=3 uid="uid://b80arx7euyqrn"]
+
+[ext_resource type="Script" uid="uid://ddq23y1gd17qx" path="res://addons/spotlight_search/ui/components/list_item/list_item.gd" id="1_foq2d"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_oing4"]
+bg_color = Color(0.60038817, 0.60038817, 0.60038817, 0)
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.019607844)
+
+[node name="ListItem" type="PanelContainer"]
+size_flags_horizontal = 3
+mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_oing4")
+script = ExtResource("1_foq2d")
+
+[node name="Padding" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HBox" type="HBoxContainer" parent="Padding"]
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="Padding/HBox"]
+modulate = Color(0.5568628, 0.57254905, 0.5921569, 1)
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TextGroup" type="VBoxContainer" parent="Padding/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="Padding/HBox/TextGroup"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8784314, 0.8784314, 0.8784314, 1)
+theme_override_constants/line_spacing = 0
+theme_override_font_sizes/font_size = 14
+
+[node name="Desc" type="Label" parent="Padding/HBox/TextGroup"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.46666667, 0.46666667, 0.46666667, 1)
+theme_override_font_sizes/font_size = 12
+
+[node name="Arrow" type="Label" parent="Padding/HBox"]
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.33333334, 0.33333334, 0.33333334, 1)
+theme_override_font_sizes/font_size = 16
+text = ">"

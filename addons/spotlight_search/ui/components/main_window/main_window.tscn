@@ -1,0 +1,131 @@
+[gd_scene load_steps=9 format=3 uid="uid://djulemsm1mhwx"]
+
+[ext_resource type="Script" uid="uid://fqsrb3o2ag5k" path="res://addons/spotlight_search/ui/components/main_window/main_window.gd" id="1_main"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_s3174"]
+bg_color = Color(0, 0, 0, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.3)
+shadow_size = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_g0gcj"]
+bg_color = Color(0.12, 0.13, 0.14, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.24, 0.25, 0.27, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.3)
+shadow_size = 12
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_tghtb"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tghtb"]
+bg_color = Color(0.15, 0.16, 0.17, 1)
+border_width_bottom = 1
+border_color = Color(0.2, 0.21, 0.23, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_g0gcj"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_hdee3"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_k34wb"]
+
+[node name="SpotlightWindow" type="PopupPanel"]
+oversampling_override = 1.0
+size = Vector2i(900, 550)
+visible = true
+theme_override_styles/panel = SubResource("StyleBoxFlat_s3174")
+script = ExtResource("1_main")
+
+[node name="BackgroundPanel" type="PanelContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 13.0
+offset_top = 13.0
+offset_right = -13.0
+offset_bottom = -13.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_g0gcj")
+
+[node name="MainLayout" type="VBoxContainer" parent="BackgroundPanel"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="HeaderPanel" type="PanelContainer" parent="BackgroundPanel/MainLayout"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_tghtb")
+
+[node name="Padding" type="MarginContainer" parent="BackgroundPanel/MainLayout/HeaderPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 16
+
+[node name="TopBar" type="PanelContainer" parent="BackgroundPanel/MainLayout/HeaderPanel/Padding"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_tghtb")
+
+[node name="HBox" type="HBoxContainer" parent="BackgroundPanel/MainLayout/HeaderPanel/Padding/TopBar"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Breadcrumbs" type="HBoxContainer" parent="BackgroundPanel/MainLayout/HeaderPanel/Padding/TopBar/HBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="SearchInput" type="LineEdit" parent="BackgroundPanel/MainLayout/HeaderPanel/Padding/TopBar/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.8784314, 0.8784314, 0.8784314, 1)
+theme_override_colors/caret_color = Color(0.34, 0.6, 1, 1)
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxEmpty_g0gcj")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_tghtb")
+placeholder_text = "Type to search..."
+
+[node name="BodySplit" type="HBoxContainer" parent="BackgroundPanel/MainLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="LeftScroll" type="ScrollContainer" parent="BackgroundPanel/MainLayout/BodySplit"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxEmpty_hdee3")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_k34wb")
+
+[node name="ResultList" type="VBoxContainer" parent="BackgroundPanel/MainLayout/BodySplit/LeftScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RightPanel" type="PanelContainer" parent="BackgroundPanel/MainLayout/BodySplit"]
+clip_contents = true
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_stretch_ratio = 0.6
+
+[node name="ContentPadding" type="MarginContainer" parent="BackgroundPanel/MainLayout/BodySplit/RightPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0

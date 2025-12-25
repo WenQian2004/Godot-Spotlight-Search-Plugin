@@ -1,0 +1,159 @@
+[gd_scene load_steps=6 format=3 uid="uid://128h4ajj0ajn"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_main_bg"]
+bg_color = Color(0.1, 0.11, 0.12, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_icon_bg"]
+bg_color = Color(0.14, 0.15, 0.17, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_path_bg"]
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 4.0
+bg_color = Color(0.12, 0.13, 0.15, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_code_bg"]
+bg_color = Color(0.08, 0.09, 0.1, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.18, 0.19, 0.21, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="GDScriptSyntaxHighlighter" id="GDScriptSyntaxHighlighter_code"]
+
+[node name="FilePreview" type="PanelContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_main_bg")
+
+[node name="MainMargin" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="ContentLayout" type="VBoxContainer" parent="MainMargin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="HeaderSection" type="VBoxContainer" parent="MainMargin/ContentLayout"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="IconContainer" type="PanelContainer" parent="MainMargin/ContentLayout/HeaderSection"]
+custom_minimum_size = Vector2(72, 72)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_icon_bg")
+
+[node name="CenterContainer" type="CenterContainer" parent="MainMargin/ContentLayout/HeaderSection/IconContainer"]
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="MainMargin/ContentLayout/HeaderSection/IconContainer/CenterContainer"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleLabel" type="Label" parent="MainMargin/ContentLayout/HeaderSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92, 0.92, 0.94, 1)
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="PathContainer" type="PanelContainer" parent="MainMargin/ContentLayout/HeaderSection"]
+visible = false
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_path_bg")
+
+[node name="PathLabel" type="Label" parent="MainMargin/ContentLayout/HeaderSection/PathContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.45, 0.5, 0.55, 1)
+theme_override_font_sizes/font_size = 11
+horizontal_alignment = 1
+text_overrun_behavior = 3
+
+[node name="Separator" type="HSeparator" parent="MainMargin/ContentLayout"]
+modulate = Color(1, 1, 1, 0.1)
+layout_mode = 2
+
+[node name="PreviewSection" type="VBoxContainer" parent="MainMargin/ContentLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 8
+
+[node name="PreviewLabel" type="Label" parent="MainMargin/ContentLayout/PreviewSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.52, 0.55, 1)
+theme_override_font_sizes/font_size = 11
+text = "预览"
+
+[node name="CodePreviewPanel" type="PanelContainer" parent="MainMargin/ContentLayout/PreviewSection"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_code_bg")
+
+[node name="CodeMargin" type="MarginContainer" parent="MainMargin/ContentLayout/PreviewSection/CodePreviewPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="CodePreview" type="CodeEdit" parent="MainMargin/ContentLayout/PreviewSection/CodePreviewPanel/CodeMargin"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.78, 0.85, 1)
+theme_override_colors/background_color = Color(0, 0, 0, 0)
+theme_override_font_sizes/font_size = 12
+editable = false
+wrap_mode = 1
+syntax_highlighter = SubResource("GDScriptSyntaxHighlighter_code")
+gutters_draw_line_numbers = true
+
+[node name="ImagePreviewPanel" type="PanelContainer" parent="MainMargin/ContentLayout/PreviewSection"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_code_bg")
+
+[node name="ImagePreview" type="TextureRect" parent="MainMargin/ContentLayout/PreviewSection/ImagePreviewPanel"]
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ActionSection" type="VBoxContainer" parent="MainMargin/ContentLayout"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ActionButtons" type="HBoxContainer" parent="MainMargin/ContentLayout/ActionSection"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1

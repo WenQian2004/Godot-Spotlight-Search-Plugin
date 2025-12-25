@@ -1,0 +1,42 @@
+[gd_scene load_steps=2 format=3 uid="uid://b2h81t28y014l"]
+
+[ext_resource type="Script" uid="uid://clrj72o80o7mb" path="res://addons/spotlight_search/examples/say_hello/hello_preview.gd" id="1_script"]
+
+[node name="HelloPreview" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+script = ExtResource("1_script")
+
+[node name="HeaderLabel" type="Label" parent="."]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+theme_override_font_sizes/font_size = 12
+text = "CUSTOM SCENE PREVIEW"
+
+[node name="TitleLabel" type="Label" parent="."]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Title Placeholder"
+
+[node name="HSeparator" type="HSeparator" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 2
+text = "Enter a custom greeting message:"
+
+[node name="InputEdit" type="TextEdit" parent="."]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+placeholder_text = "Type your message here..."
+
+[node name="Button" type="Button" parent="."]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "Send Message to Output"
+
+[connection signal="pressed" from="Button" to="." method="_on_submit_pressed"]

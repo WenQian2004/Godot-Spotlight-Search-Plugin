@@ -22,3 +22,16 @@ spotlight_search/favorites=Array[String]([])
 config/name="SpotlightSearchPlugin"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
+
+[autoload]
+
+SpotlightManager="*res://addons/spotlight_search/core/spotlight_manager.gd"
+SpotlightInput="*res://addons/spotlight_search/core/input_manager.gd"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/spotlight_search/plugin.cfg")
+
+[spotlight_search]
+
+state/history=Array[String](["file://res://addons/spotlight_search/api/spotlight_result.gd", "cmd.config"])
