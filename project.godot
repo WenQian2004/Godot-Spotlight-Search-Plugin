@@ -26,7 +26,6 @@ config/icon="res://icon.svg"
 [autoload]
 
 SpotlightManager="*res://addons/spotlight_search/core/spotlight_manager.gd"
-SpotlightInput="*res://addons/spotlight_search/core/input_manager.gd"
 
 [editor_plugins]
 

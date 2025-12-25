@@ -13,7 +13,7 @@ const ACT_FAV_TOGGLE = "fav_toggle"     # Shift + Up
 const ACT_SHOW_FAVS = "show_favs"       # Shift + Down
 
 # 默认键位映射
-var _key_map = {
+static var _key_map = {
 	ACT_NAV_UP: [KEY_UP],
 	ACT_NAV_DOWN: [KEY_DOWN],
 	ACT_EXECUTE: [KEY_ENTER, KEY_KP_ENTER],
@@ -26,7 +26,7 @@ var _key_map = {
 }
 
 # 检查事件是否匹配动作
-func is_action(event: InputEvent, action: String) -> bool:
+static func is_action(event: InputEvent, action: String) -> bool:
 	if not event is InputEventKey or not event.pressed:
 		return false
 		

@@ -1,6 +1,9 @@
 @tool
 extends PopupPanel
 
+const SpotlightInput = preload("res://addons/spotlight_search/core/input_manager.gd")
+const SpotlightConfig = preload("res://addons/spotlight_search/core/config_manager.gd")
+
 # 引入列表项场景
 var LIST_ITEM_SCENE: PackedScene
 var FILE_PREVIEW_SCENE: PackedScene

@@ -11,7 +11,7 @@ func _enter_tree() -> void:
 	
 	# 添加单例 (Autoload)
 	add_autoload_singleton(MANAGER_NAME, base_path + "/core/spotlight_manager.gd")
-	add_autoload_singleton("SpotlightInput", base_path + "/core/input_manager.gd")
+	# add_autoload_singleton("SpotlightInput", base_path + "/core/input_manager.gd")
 	
 	
 	# 添加工具菜单项
@@ -56,7 +56,7 @@ func _register_tracker():
 func _exit_tree() -> void:
 	# 移除单例
 	remove_autoload_singleton(MANAGER_NAME)
-	remove_autoload_singleton("SpotlightInput")
+	# remove_autoload_singleton("SpotlightInput")
 	
 	if tracker_instance:
 		remove_inspector_plugin(tracker_instance)
