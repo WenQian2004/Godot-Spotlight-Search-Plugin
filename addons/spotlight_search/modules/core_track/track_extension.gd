@@ -1,217 +1,128 @@
 @tool
-extends SpotlightExtension
+extends SpotlightSimpleExtension
 
-# 动态加载引用
-var COMMAND_RESULT_SCRIPT
-var FUZZY_SEARCH
-const SCORE_BASE = 100
+# --- 场景节点跟踪扩展 ---
+
 const TRACK_GROUP = "spotlight_tracked"
 
-# Inner class for Track Results with Drag Support
-class TrackNodeResult:
-	extends CommandResult
-	
-	var target_node_path: NodePath
-	
-	func get_drag_data() -> Variant:
-		# Return text format for GDScript usage ($Path)
-		var p_str = str(target_node_path)
-		var text = "$" + p_str
-		# Handle spaces in path
-		if " " in p_str:
-			text = '$"%s"' % p_str
-			
-		return text
-
 func _init():
-	pass
+	# 主指令: -track
+	var track = add_command("-track", "Scene Node Tracker") \
+		.set_icon("Search") \
+		.set_tags(["Official", "Command"])
+	
+	# 子指令: all (显示所有节点)
+	track.add_command("all", "List All Scene Nodes") \
+		.set_icon("ListSelect") \
+		.set_dynamic_provider(_provide_scene_nodes)
+		
+	# 子指令: find (显示被跟踪/收藏的节点)
+	track.add_command("find", "Find Tracked/Favorite Nodes") \
+		.set_icon("Favorites") \
+		.set_dynamic_provider(_provide_tracked_nodes)
 
 func get_id() -> String:
 	return "core.track"
 
 func get_display_name() -> String:
 	return "Scene Node Tracker"
-
+	
 func get_author() -> String:
 	return "Godot Engine"
 
 func get_version() -> String:
-	return "1.1.0"
+	return "2.0.0"
 
-func query(text: String, context: Array) -> Array[SpotlightResultItem]:
-	var results: Array[SpotlightResultItem] = []
-	var search_term = text.strip_edges().to_lower()
-	
-	# Determine Mode
-	var mode = "none" # none, root, all, find
-	
-	if not context.is_empty():
-		var last_id = context.back().get_unique_id()
-		if last_id == "cmd.track":
-			mode = "root"
-		elif last_id == "cmd.track.all":
-			mode = "all"
-		elif last_id == "cmd.track.find":
-			mode = "find"
-	
-	# Handle Direct Input Prefix (e.g. "-track -all")
-	if mode == "none" and text.begins_with("-track"):
-		var parts = text.split(" ", false)
-		if parts.size() >= 2:
-			var sub = parts[1]
-			if sub == "-all":
-				mode = "all"
-				# Strip prefix "-track -all"
-				# A simplistic way:
-				var prefix_len = "-track -all".length()
-				if text.length() > prefix_len:
-					search_term = text.substr(prefix_len).strip_edges().to_lower()
-				else:
-					search_term = ""
-			elif sub == "-find":
-				mode = "find"
-				var prefix_len = "-track -find".length()
-				if text.length() > prefix_len:
-					search_term = text.substr(prefix_len).strip_edges().to_lower()
-				else:
-					search_term = ""
-			else:
-				# "-track something" -> Default to root mode with query
-				mode = "root"
-				# Strip "-track"
-				search_term = text.substr(6).strip_edges().to_lower()
-		else:
-			# Just "-track"
-			mode = "root"
-			search_term = ""
+# --- 动态提供者 ---
 
-	# Execute Logic based on Mode
-	if mode == "root":
-		# Only show sub-commands. No direct search.
-		# User must select a mode (Tab/Enter) to proceed.
-		
-		# Define commands
-		var cmd_all = { "id": "cmd.track.all", "key": "-all", "desc": "Search ALL nodes in scene", "icon": "Search" }
-		var cmd_find = { "id": "cmd.track.find", "key": "-find", "desc": "Search tracked nodes (Favorites)", "icon": "Favorites" }
-		
-		var cmds = [cmd_all, cmd_find]
-		
-		for c in cmds:
-			var show = false
-			var score = 0
-			
-			if search_term.is_empty():
-				show = true
-				score = 100
-			else:
-				# Simple strict matching for commands
-				if c.key.begins_with(search_term):
-					show = true
-					score = 100
-				elif search_term.begins_with("-") and c.key.begins_with(search_term):
-					show = true
-					score = 100
-			
-			if show:
-				var item = _create_subcommand(c.id, c.key, c.desc, c.icon, score)
-				results.append(item)
-			
-	elif mode == "all":
-		results = _search_nodes(search_term, false) # recursive = true, tracked_only = false
-		
-	elif mode == "find":
-		results = _search_nodes(search_term, true) # tracked_only = true
-		
-	return results
-
-func _create_subcommand(id: String, title: String, desc: String, icon_name: String, score: int) -> SpotlightResultItem:
-	var icon = EditorInterface.get_editor_theme().get_icon(icon_name, "EditorIcons")
-	var item = CommandResult.new(
-		id,
-		title,
-		desc,
-		icon,
-		Callable(), # No action, just category
-		true # Is Category
-	)
-	item.tags = ["Track", "Command"]
-	item.score = score
-	return item
-
-func _search_nodes(query: String, tracked_only: bool) -> Array[SpotlightResultItem]:
+func _provide_scene_nodes(query: String) -> Array[SpotlightResultItem]:
 	var results: Array[SpotlightResultItem] = []
 	var root = EditorInterface.get_edited_scene_root()
-	
 	if not root:
-		return results
+		return []
 		
-	var target_nodes = []
+	# 递归获取所有节点
+	var all_nodes = []
+	_collect_nodes(root, all_nodes)
 	
-	if tracked_only:
-		# Search in group
-		var nodes = root.get_tree().get_nodes_in_group(TRACK_GROUP)
-		# Filter nodes that belong to current scene (scene root or below)
-		for n in nodes:
-			if n == root or root.is_ancestor_of(n):
-				target_nodes.append(n)
-	else:
-		# Search all
-		_collect_nodes(root, target_nodes)
-	
-	for node in target_nodes:
-		if not is_instance_valid(node): continue
-		
-		var score = 0
-		if query.is_empty():
-			score = SCORE_BASE
-		else:
-			var match_res = SpotlightFuzzySearch.fuzzy_match(query, node.name)
-			if match_res.matched:
-				score = match_res.score
-			else:
-				continue
-		
-		# Create Result Item
-		var icon = EditorInterface.get_editor_theme().get_icon(node.get_class(), "EditorIcons")
-		var node_path = root.get_path_to(node)
-		var desc = str(node_path)
-		
-		# Use TrackNodeResult instead of generic CommandResult
-		var item = TrackNodeResult.new(
-			"track.node." + str(node_path),
-			node.name,
-			desc,
-			icon,
-			func(): _select_node(node),
-			false
-		)
-		item.target_node_path = node_path
-		
-		item.tags = ["Node"]
-		if tracked_only or node.is_in_group(TRACK_GROUP):
-			item.tags.append("Tracked")
-			score += 50 # Bonus for tracked nodes
+	for node in all_nodes:
+		if query.is_empty() or node.name.to_lower().contains(query.to_lower()):
+			var item = TrackSimpleItem.new()
+			item.title = node.name
+			item.description = str(root.get_path_to(node))
+			item.target_node_path = root.get_path_to(node)
 			
-		item.score = score
-		results.append(item)
-		
-	results.sort_custom(func(a, b): return a.score > b.score)
-	
-	if results.size() > 50:
-		results.resize(50)
-		
+			var class_icon = node.get_class()
+			if EditorInterface.get_editor_theme().has_icon(class_icon, "EditorIcons"):
+				item.icon = EditorInterface.get_editor_theme().get_icon(class_icon, "EditorIcons")
+			else:
+				item.icon = EditorInterface.get_editor_theme().get_icon("Node", "EditorIcons")
+				
+			item.score = 100
+			
+			# 点击选中节点
+			item.set_execute_callback(func(): 
+				EditorInterface.get_selection().clear()
+				EditorInterface.get_selection().add_node(node)
+				print("[Spotlight] Selected node: ", node.name)
+			)
+			results.append(item)
+			
 	return results
 
-func _collect_nodes(node: Node, target_array: Array):
-	target_array.append(node)
+func _collect_nodes(node: Node, list: Array):
+	list.append(node)
 	for child in node.get_children():
-		_collect_nodes(child, target_array)
+		_collect_nodes(child, list)
 
-func _select_node(node: Node):
-	if is_instance_valid(node):
-		var selection = EditorInterface.get_selection()
-		selection.clear()
-		selection.add_node(node)
-		print("[Spotlight] Selected node: ", node.name)
-	else:
-		print("[Spotlight] Node is no longer valid")
+func _provide_tracked_nodes(query: String) -> Array[SpotlightResultItem]:
+	var results: Array[SpotlightResultItem] = []
+	var root = EditorInterface.get_edited_scene_root()
+	if not root:
+		return []
+		
+	# 获取所有分组中的节点
+	var nodes = root.get_tree().get_nodes_in_group(TRACK_GROUP)
+	
+	for node in nodes:
+		# 确保节点属于当前场景
+		if not (node == root or root.is_ancestor_of(node)):
+			continue
+			
+		if query.is_empty() or node.name.to_lower().contains(query.to_lower()):
+			var item = TrackSimpleItem.new()
+			item.title = node.name
+			item.description = str(root.get_path_to(node))
+			item.target_node_path = root.get_path_to(node)
+			
+			var class_icon = node.get_class()
+			if EditorInterface.get_editor_theme().has_icon(class_icon, "EditorIcons"):
+				item.icon = EditorInterface.get_editor_theme().get_icon(class_icon, "EditorIcons")
+			else:
+				item.icon = EditorInterface.get_editor_theme().get_icon("Node", "EditorIcons")
+				
+			item.score = 100
+			item.tags = ["Tracked"]
+			
+			# 点击选中节点
+			item.set_execute_callback(func(): 
+				EditorInterface.get_selection().clear()
+				EditorInterface.get_selection().add_node(node)
+			)
+			results.append(item)
+			
+	return results
+
+# --- 自定义 Item 类 (支持拖拽) ---
+class TrackSimpleItem extends SimpleResultItem:
+	var target_node_path: NodePath
+	
+	func get_drag_data() -> Variant:
+		# 返回 GDScript 友好的节点路径引用 ($Path)
+		var p_str = str(target_node_path)
+		var text = "$" + p_str
+		# 处理空格
+		if " " in p_str:
+			text = '$"%s"' % p_str
+			
+		return text

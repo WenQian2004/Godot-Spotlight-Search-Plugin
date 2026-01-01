@@ -33,4 +33,4 @@ enabled=PackedStringArray("res://addons/spotlight_search/plugin.cfg")
 
 [spotlight_search]
 
-state/history=Array[String](["file://res://addons/spotlight_search/api/spotlight_result.gd", "cmd.config"])
+state/history=Array[String](["file://res://addons/spotlight_search/core/favorites_manager.gd", "core.commands.config", "core.commands.zen", "file://res://addons/spotlight_search/api/spotlight_result.gd", "cmd.config"])

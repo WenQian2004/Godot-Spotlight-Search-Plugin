@@ -103,8 +103,5 @@ func get_unique_id() -> String:
 	return "class.%s.%s" % [class_name_str, member_name]
 
 func get_drag_data() -> Variant:
-	# 支持拖拽：将成员名称作为文本拖拽
-	return {
-		"type": "text",
-		"text": auto_complete_text
-	}
+	# 支持拖拽：直接返回文本，这样可以拖拽到脚本编辑器中
+	return auto_complete_text

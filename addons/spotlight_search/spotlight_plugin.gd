@@ -31,6 +31,11 @@ func _enter_tree() -> void:
 	# 2. 注册 Inspector Tracker (如果存在)
 	_register_tracker()
 	
+	# 3. 监听 Manager 的打开设置请求
+	var manager = get_node_or_null("/root/SpotlightManager")
+	if manager:
+		manager.request_open_settings.connect(_open_settings)
+	
 	# 通过重写 _unhandled_input 等方法实现全局快捷键监听
 	_add_custom_shortcut()
 
@@ -135,6 +140,7 @@ func _open_settings():
 
 	var SettingsPanel = load(base_path + "/ui/settings_panel/settings_panel.gd")
 	settings_window_instance = SettingsPanel.new()
+	settings_window_instance.tree_exited.connect(func(): settings_window_instance = null)
 	EditorInterface.get_base_control().add_child(settings_window_instance)
 	settings_window_instance.popup_centered()
 

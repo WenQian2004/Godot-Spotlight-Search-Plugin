@@ -5,9 +5,9 @@ class_name SpotlightResultItem
 ## 查询到的Item组件的实现
 
 # 结果类型：LEAF=可执行/文件, CATEGORY=目录/文件夹
-enum ItemType { LEAF, CATEGORY }
+enum ItemType {LEAF, CATEGORY}
 # 预览类型：FILE=标准文件, DESC=标准描述, CUSTOM=自定义控件
-enum PreviewType { STANDARD_FILE, STANDARD_DESC, CUSTOM }
+enum PreviewType {STANDARD_FILE, STANDARD_DESC, CUSTOM}
 
 var type = ItemType.LEAF
 var title: String = "Untitled"
@@ -37,7 +37,9 @@ func get_preview_type() -> PreviewType:
 # 用于 Standard 模式的数据
 # 包含字段: text (描述), code (代码片段), image (图片), sub_title (路径)
 func get_preview_content() -> Dictionary:
-	return { "text": "No description provided." }
+	if not description.is_empty():
+		return {"text": description}
+	return {"text": "No description provided."}
 
 # 用于 Custom 模式 (返回 Control 实例)
 func create_custom_preview() -> Control:

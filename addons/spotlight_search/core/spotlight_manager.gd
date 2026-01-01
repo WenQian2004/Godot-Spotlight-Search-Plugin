@@ -12,6 +12,8 @@ const MAX_HISTORY = 20
 # 搜索历史
 var _history: Array[String] = []
 
+signal request_open_settings
+
 func _ready():
 	_load_history()
 	
@@ -165,9 +167,6 @@ func get_all_favorites_as_items() -> Array[SpotlightResultItem]:
 func _get_zero_query_results() -> Array[SpotlightResultItem]:
 	var results: Array[SpotlightResultItem] = []
 	var added_ids = {}
-	
-	# 1. 移除初始页面的收藏显示
-	# (用户要求收藏仅在 Shift+Down 页面显示)
 	
 	# 2. 最近历史 (History) -> Score 500
 

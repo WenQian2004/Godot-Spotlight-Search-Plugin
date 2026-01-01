@@ -49,7 +49,7 @@ func _ready():
 	style.border_width_top = 1
 	style.border_width_right = 1
 	style.border_width_bottom = 1
-	style.border_color = get_theme_color("dark_color_3", "Editor") 
+	style.border_color = get_theme_color("dark_color_3", "Editor")
 	style.corner_radius_top_left = 12
 	style.corner_radius_top_right = 12
 	style.corner_radius_bottom_right = 12
@@ -203,7 +203,7 @@ func _teleport_to(target_pos: Vector2i):
 	# 面板已可见 - 传送动画 (淡出 -> 移动 -> 淡入)
 	var tween = create_tween()
 	tween.tween_property(content, "modulate:a", 0.0, 0.1)
-	tween.tween_callback(func(): 
+	tween.tween_callback(func():
 		# 使用 popup 设置新位置和尺寸
 		popup(Rect2i(target_pos, target_size))
 		if search_input and search_input.focus_mode != Control.FOCUS_NONE:
@@ -236,8 +236,8 @@ func toggle_right_panel(show_panel: bool, instant: bool = false):
 		right_panel.visible = show_panel
 	else:
 		# 使用 Tween 动画
-		var tween = create_tween().set_parallel(true)\
-			.set_trans(Tween.TRANS_CUBIC)\
+		var tween = create_tween().set_parallel(true) \
+			.set_trans(Tween.TRANS_CUBIC) \
 			.set_ease(Tween.EASE_OUT)
 		
 		# 1. 窗口变宽
@@ -253,8 +253,44 @@ func toggle_right_panel(show_panel: bool, instant: bool = false):
 			tween.chain().tween_callback(func(): right_panel.visible = false)
 
 
+var is_in_full_preview: bool = false # 全屏预览模式标记
+
+# --- 核心：全屏预览模式控制 ---
+func _set_full_preview_mode(full_screen: bool):
+	is_in_full_preview = full_screen
+	var left_scroll = result_container.get_parent()
+	if not left_scroll: return
+	
+	if full_screen:
+		# 启用全屏
+		left_scroll.visible = false
+		right_panel.visible = true
+		
+		# 关键布局修正：让右侧面板占满剩余空间
+		# 取消固定宽度限制，设置水平扩展
+		right_panel.custom_minimum_size.x = 0
+		right_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		right_panel.size_flags_stretch_ratio = 1.0
+		
+		# 强制让内部的 PreviewControl 也更新布局
+		for child in content_container.get_children():
+			child.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			child.size_flags_vertical = Control.SIZE_EXPAND_FILL
+			
+	else:
+		# 恢复双栏
+		left_scroll.visible = true
+		
+		# 恢复右侧面板默认状态
+		# toggle_right_panel 会负责重置 custom_minimum_size 和 flags
+		toggle_right_panel(true, true)
+		
+	# 触发一次布局更新
+	# queue_redraw() # PopupPanel is a Window, not CanvasItem. Layout update is automatic.
+
 # --- 输入监听 ---
 # --- 核心：输入导航 (键盘上下键) ---
+
 func _input(event):
 	if not visible: return
 	
@@ -262,15 +298,29 @@ func _input(event):
 	if not event is InputEventKey or not event.pressed:
 		return
 
-	# 优先检查是否是唤醒快捷键 (例如 Alt+Q)
-	# 如果是，且当前已经显示，则视为“移动到新位置”的操作
+	# 1. 全局最高优先级：唤醒/重置快捷键 (如 Alt+Q)
 	if SpotlightConfig.is_event_shortcut(event):
 		open_spotlight()
 		get_viewport().set_input_as_handled()
 		return
 
-	# 使用 InputManager 判断
+	# 2. 全屏预览模式处理
+	if is_in_full_preview:
+		# 退出全屏 (Shift + Right) - 这是全屏模式下唯一保留的 Spotlight 快捷键
+		if event.shift_pressed and event.keycode == KEY_RIGHT:
+			_set_full_preview_mode(false)
+			get_viewport().set_input_as_handled()
+			return
+		return
 
+	# 3. 常规模式：Shift + Left 进入全屏
+	if event.shift_pressed and event.keycode == KEY_LEFT:
+		_set_full_preview_mode(true)
+		get_viewport().set_input_as_handled()
+		return
+
+	# 4. 常规模式：Spotlight 列表导航
+	# 使用 InputManager 判断
 	if SpotlightInput.is_action(event, SpotlightInput.ACT_NAV_BACK):
 		if not context_stack.is_empty():
 			_go_back()
@@ -380,7 +430,7 @@ func get_favorites_manager():
 
 # --- 核心：搜索变动时触发 ---
 func _on_search_text_changed(new_text):
-	# 只要输入的搜索文本变化 (不是我们的 toggle 操作导致的)，就重置 flag
+	# 只要输入的搜索文本变化
 	if not is_showing_favorites:
 		pass
 	else:
@@ -435,7 +485,7 @@ func _update_list_ui(items: Array[SpotlightResultItem]):
 		ui.setup(item)
 		
 		# 连接信号 (鼠标点击)
-		ui.item_selected.connect(func(_it): 
+		ui.item_selected.connect(func(_it):
 			selected_index = i
 			_update_selection_visual()
 		)
@@ -447,7 +497,7 @@ func _update_list_ui(items: Array[SpotlightResultItem]):
 # --- 核心：视觉高亮与预览 ---
 func _update_selection_visual():
 	var children = result_container.get_children()
-	if children.is_empty(): 
+	if children.is_empty():
 		# 清空右侧面板
 		_update_preview_panel(null)
 		return
@@ -522,14 +572,13 @@ func _go_back():
 		hide() # 如果在根目录，就关闭
 
 # --- 核心：更新右侧预览面板 ---
-# 重写这个函数，现在它将实例化不同的场景
+# 实例化不同的场景
 func _update_preview_panel(item: SpotlightResultItem):
 	#print("[Spotlight Preview] _update_preview_panel called, item: ", item)
-	
 	for child in content_container.get_children():
 		child.queue_free() # 清空旧内容
 		
-	if item == null: 
+	if item == null:
 		return
 	
 	# 如果用户之前手动关闭了面板，就不自动展开
@@ -614,7 +663,7 @@ func _update_preview_panel(item: SpotlightResultItem):
 				# 异步加载缩略图 (用于 Scene 等)
 				if image_preview:
 					# 可以先设个默认图或者 Loading 状态
-					image_preview.texture = null 
+					image_preview.texture = null
 				if image_panel:
 					image_panel.visible = true
 				if code_panel:
@@ -787,4 +836,4 @@ func _on_thumbnail_loaded(path: String, preview: Texture2D, thumbnail_preview: T
 		image_preview.texture = thumbnail_preview
 	else:
 		# 加载失败
-		pass 
+		pass

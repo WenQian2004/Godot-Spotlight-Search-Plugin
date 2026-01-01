@@ -9,8 +9,11 @@ var current_input: String = ""
 var previous_input: float = 0.0
 var operation: String = ""
 var should_reset: bool = false
+var mode: String = "standard"
 
-func _init():
+func _init(p_mode: String = "standard"):
+	mode = p_mode
+	
 	# 1. 设置布局
 	add_theme_constant_override("separation", 10)
 	

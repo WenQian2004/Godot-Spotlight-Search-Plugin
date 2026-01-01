@@ -36,14 +36,16 @@ Mastering these shortcuts is the key to maximizing your efficiency with Spotligh
 | **↑ / ↓** | **Select Result** | Navigate up and down through the search results list. |
 | **Enter** | **Execute / Open** | Open the selected file or execute the selected command. |
 | **Tab** | **Autocomplete / Enter** | Fill the search bar with the text of the currently selected item or enter a category. |
-| **→ (Right)** | **Expand Panel** | Force open the right-side preview/detail panel. |
-| **← (Left)** | **Collapse Panel** | Force close the right-side preview/detail panel. |
+| **Left Key** | **Close the right view panel** | Closes the right view panel. |
+| **Right Key** | **Open the right view panel** | Opens the right view panel, restoring the default layout. |
 
 ### Advanced Actions
 | Key | Action | Description |
 | :--- | :--- | :--- |
 | **Shift + ↓** | **Show Favorites** | Display all favorited commands or files. |
 | **Shift + ↑** | **Toggle Favorite** | Add or remove the currently selected command from "Favorites". |
+| **Shift + Left Key** | **Full Preview Mode** | Hides the list and shows the preview panel in full screen. Allows custom input in preview. |
+| **Shift + Right Key** | **Exit Full Preview** | Exits full screen preview and restores default layout. |
 
 ---
 
@@ -52,18 +54,22 @@ Mastering these shortcuts is the key to maximizing your efficiency with Spotligh
 Type these prefixes in the search bar to filter results or switch modes:
 
 *   **Resource Filters**
-	*   `-gd`: Search scripts only
-	*   `-sc`: Search scenes only
-	*   `-img`: Search images only
+	*   `-gdscript`: Search GDScript files (.gd)
+	*   `-scene`: Search Scene files (.tscn)
+	*   `-image`: Search Image assets (.png, .jpg, etc)
+	*   `-resource`: Search Resources (.tres, .res)
+	*   `-shader`: Search Shader files
 *   **Common Commands**
-	*   `-new`: Create resources (Script, Shader, etc.)
-	*   `-scene`: Current scene actions (Run, Save, Reload)
+	*   `-new`: Create New Resources (Script, Scene, Shader)
 	*   `-quit`: Quit Editor
 	*   `-reload`: Reload Project
-	*   `-fs`: Toggle Fullscreen
+	*   `-full`: Toggle Fullscreen
+	*   `-zen`: (Experimental) Toggle Zen/Distraction Free Mode
 *   **Advanced**
 	*   `-config`: Open Plugin Settings
-	*   `-track`: Search tracked nodes
+	*   `-track`: Manage/Find Tracked Nodes
+	*   `-node`: Browse Engine Nodes
+	*   `-class`: Browse All Engine Classes
 
 ---
 

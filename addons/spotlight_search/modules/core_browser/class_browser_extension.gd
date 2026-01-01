@@ -1,15 +1,23 @@
 @tool
-extends SpotlightExtension
+extends SpotlightSimpleExtension
+
+# --- 类浏览器扩展 (Refactored) ---
 
 # 动态加载引用
-var CLASS_RESULT_SCRIPT
-var FUZZY_SEARCH
-const SCORE_BASE = 100
+const ClassResultScript = preload("res://addons/spotlight_search/modules/core_browser/class_result.gd")
 
 func _init():
-	var base_dir = get_script().resource_path.get_base_dir()
-	CLASS_RESULT_SCRIPT = load(base_dir + "/class_result.gd")
-	FUZZY_SEARCH = load("res://addons/spotlight_search/core/fuzzy_search.gd")
+	# 注册 -node 指令
+	add_command("-node", "Browse Engine Nodes") \
+		.set_icon("Node") \
+		.set_tags(["Official", "Command"]) \
+		.set_dynamic_provider(_provide_node_classes)
+		
+	# 注册 -class 指令 (浏览所有类)
+	add_command("-class", "Browse All Engine Classes") \
+		.set_icon("Object") \
+		.set_tags(["Official", "Command"]) \
+		.set_dynamic_provider(_provide_all_classes)
 
 func get_id() -> String:
 	return "core.browser"
@@ -20,50 +28,35 @@ func get_display_name() -> String:
 func get_author() -> String:
 	return "Godot Engine"
 
+# --- 核心查询逻辑重写 ---
+
 func query(text: String, context: Array) -> Array[SpotlightResultItem]:
-	var results: Array[SpotlightResultItem] = []
-	var search_term = text.strip_edges().to_lower()
-	
-	# Determine mode based on context or text prefix
-	var mode = "" # "node" or "class" or "class_members"
-	var target_class = ""
-	
-	# 1. 检查上下文 (Context-based navigation)
+	# 1. 检查是否处于 "class." 上下文中 (查看类成员)
 	if not context.is_empty():
 		var last = context.back()
 		var uid = last.get_unique_id()
 		
-		if uid == "cmd.node":
-			mode = "node"
-		elif uid.begins_with("class."):
+		if uid.begins_with("class.") and not uid.contains(".member."):
 			# Context like "class.Button" -> Show members
-			mode = "class_members"
-			target_class = last.class_name_str
-	
-	# 2. 检查前缀 (Direct string query)
-	# 只有当没有特定上下文，或者正在根上下文时才检查前缀
-	if mode == "" and context.is_empty():
-		if text.begins_with("-node"):
-			mode = "node"
-			# Remove prefix from search term
-			var parts = text.split(" ", false, 1)
-			if parts.size() > 1:
-				search_term = parts[1].to_lower()
-			else:
-				search_term = "" # List all
-	
-	# 执行查询
-	if mode == "node":
-		results = _query_classes(search_term, true)
-	elif mode == "class_members" and target_class != "":
-		results = _query_members(target_class, search_term)
-		
-	return results
+			# uid format: "class.Button"
+			var class_name_str = uid.trim_prefix("class.")
+			return _provide_members(class_name_str, text)
+			
+	# 2. 否则使用基类逻辑 (处理 -node, -class 等)
+	return super.query(text, context)
 
-# 查询类列表 (Node模式只显示 Node 子类)
+# --- Providers ---
+
+func _provide_node_classes(query: String) -> Array[SpotlightResultItem]:
+	return _query_classes(query, true)
+
+func _provide_all_classes(query: String) -> Array[SpotlightResultItem]:
+	return _query_classes(query, false)
+
 func _query_classes(query: String, only_nodes: bool) -> Array[SpotlightResultItem]:
 	var results: Array[SpotlightResultItem] = []
 	var class_list = ClassDB.get_class_list()
+	var search_term = query.to_lower()
 	
 	for c_name in class_list:
 		if c_name.begins_with("_"): continue # Skip internal
@@ -73,16 +66,16 @@ func _query_classes(query: String, only_nodes: bool) -> Array[SpotlightResultIte
 			continue
 			
 		var score = 0
-		if query.is_empty():
-			score = SCORE_BASE # Default score
+		if search_term.is_empty():
+			score = 100
 		else:
-			var match_res = FUZZY_SEARCH.fuzzy_match(query, c_name)
+			var match_res = SpotlightFuzzySearch.fuzzy_match(search_term, c_name)
 			if not match_res.matched:
 				continue
 			score = match_res.score
 		
 		# 构造 Result
-		var item = CLASS_RESULT_SCRIPT.new(c_name, "", CLASS_RESULT_SCRIPT.MemberType.CLASS, "")
+		var item = ClassResultScript.new(c_name, "", ClassResultScript.MemberType.CLASS, "")
 		item.score = score
 		
 		# 填充额外信息 (父类)
@@ -98,15 +91,15 @@ func _query_classes(query: String, only_nodes: bool) -> Array[SpotlightResultIte
 	# 排序
 	results.sort_custom(func(a, b): return a.score > b.score)
 	
-	# 限制数量，防止卡顿
+	# 限制数量
 	if results.size() > 100:
 		results.resize(100)
 		
 	return results
 
-# 查询类的成员 (属性/方法)
-func _query_members(cls_name: String, query: String) -> Array[SpotlightResultItem]:
+func _provide_members(cls_name: String, query: String) -> Array[SpotlightResultItem]:
 	var results: Array[SpotlightResultItem] = []
+	var search_term = query.to_lower()
 	
 	# 1. Properties
 	var props = ClassDB.class_get_property_list(cls_name)
@@ -118,35 +111,35 @@ func _query_members(cls_name: String, query: String) -> Array[SpotlightResultIte
 		var p_name = p["name"]
 		
 		var score = 0
-		if query.is_empty():
-			score = SCORE_BASE
+		if search_term.is_empty():
+			score = 100
 		else:
-			var match_res = FUZZY_SEARCH.fuzzy_match(query, p_name)
+			var match_res = SpotlightFuzzySearch.fuzzy_match(search_term, p_name)
 			if not match_res.matched:
 				continue
 			score = match_res.score
 			
-		var item = CLASS_RESULT_SCRIPT.new(cls_name, p_name, CLASS_RESULT_SCRIPT.MemberType.PROPERTY, "")
+		var item = ClassResultScript.new(cls_name, p_name, ClassResultScript.MemberType.PROPERTY, "")
 		item.return_type = _type_to_string(p["type"])
 		item.score = score
 		results.append(item)
 		
-	# 3. Methods
+	# 2. Methods
 	var methods = ClassDB.class_get_method_list(cls_name)
 	for m in methods:
 		var m_name = m["name"]
 		if m_name.begins_with("_"): continue
 		
 		var score = 0
-		if query.is_empty():
-			score = SCORE_BASE
+		if search_term.is_empty():
+			score = 100
 		else:
-			var match_res = FUZZY_SEARCH.fuzzy_match(query, m_name)
+			var match_res = SpotlightFuzzySearch.fuzzy_match(search_term, m_name)
 			if not match_res.matched:
 				continue
 			score = match_res.score
 			
-		var item = CLASS_RESULT_SCRIPT.new(cls_name, m_name, CLASS_RESULT_SCRIPT.MemberType.METHOD, "")
+		var item = ClassResultScript.new(cls_name, m_name, ClassResultScript.MemberType.METHOD, "")
 		item.return_type = _type_to_string(m.get("return", {}).get("type", 0))
 		
 		# Build signature
@@ -159,21 +152,21 @@ func _query_members(cls_name: String, query: String) -> Array[SpotlightResultIte
 		item.score = score
 		results.append(item)
 		
-	# 4. Signals
+	# 3. Signals
 	var signals = ClassDB.class_get_signal_list(cls_name)
 	for s in signals:
 		var s_name = s["name"]
 		
 		var score = 0
-		if query.is_empty():
-			score = SCORE_BASE
+		if search_term.is_empty():
+			score = 100
 		else:
-			var match_res = FUZZY_SEARCH.fuzzy_match(query, s_name)
+			var match_res = SpotlightFuzzySearch.fuzzy_match(search_term, s_name)
 			if not match_res.matched:
 				continue
 			score = match_res.score
 			
-		var item = CLASS_RESULT_SCRIPT.new(cls_name, s_name, CLASS_RESULT_SCRIPT.MemberType.SIGNAL, "")
+		var item = ClassResultScript.new(cls_name, s_name, ClassResultScript.MemberType.SIGNAL, "")
 		item.score = score
 		results.append(item)
 		

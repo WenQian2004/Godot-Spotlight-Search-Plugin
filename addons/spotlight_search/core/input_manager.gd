@@ -47,7 +47,7 @@ static func is_action(event: InputEvent, action: String) -> bool:
 		ACT_SHOW_FAVS:
 			return event.shift_pressed # 必须按 Shift
 		_:
-			# 其他导航键通常不按 Shift (除非你希望 Shift+Down 也能向下)
+			# 其他导航键通常不按 Shift
 			if action == ACT_NAV_UP or action == ACT_NAV_DOWN:
 				return not event.shift_pressed
 			return true

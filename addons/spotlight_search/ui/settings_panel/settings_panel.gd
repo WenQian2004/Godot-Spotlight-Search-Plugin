@@ -6,6 +6,8 @@ extends Window
 # Variables
 var listening_for_input = false
 var current_shortcut = {}
+var current_filter_mode = 0 # 0: All, 1: Official, 2: Community
+var current_search_text = ""
 
 
 # UI Nodes
@@ -16,6 +18,7 @@ var max_preview_spin: SpinBox
 var extensions_container: VBoxContainer
 var shortcut_btn: Button
 var shortcut_label: Label
+var search_edit: LineEdit
 
 
 func _ready():
@@ -186,6 +189,23 @@ func _build_ui():
 	btn_import.pressed.connect(_on_import_extension_pressed)
 	h_ext_header.add_child(btn_import)
 	
+	# Search and Filter
+	var h_tools = HBoxContainer.new()
+	h_tools.add_theme_constant_override("separation", 8)
+	content.add_child(h_tools)
+	
+	search_edit = LineEdit.new()
+	search_edit.placeholder_text = "Search extensions..."
+	search_edit.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	search_edit.right_icon = get_theme_icon("Search", "EditorIcons")
+	search_edit.text_changed.connect(_on_extension_search_changed)
+	h_tools.add_child(search_edit)
+	
+	var filter_group = ButtonGroup.new()
+	_create_filter_btn(h_tools, "All", 0, filter_group, true)
+	_create_filter_btn(h_tools, "Official", 1, filter_group)
+	_create_filter_btn(h_tools, "Community", 2, filter_group)
+	
 	extensions_container = VBoxContainer.new()
 	extensions_container.add_theme_constant_override("separation", 8)
 	content.add_child(extensions_container)
@@ -337,8 +357,52 @@ func _refresh_extensions_list():
 		extensions_container.add_child(lbl)
 		return
 	
+	var filtered_extensions = []
+	
 	for ext in extensions:
-		_create_extension_card(ext)
+		# Filter logic
+		var script_path = ext.get_script().resource_path
+		var is_official = script_path.begins_with("res://addons/spotlight_search/modules/") or script_path.begins_with("res://addons/spotlight_search/core/")
+		
+		# 1. Category Filter
+		if current_filter_mode == 1 and not is_official: continue
+		if current_filter_mode == 2 and is_official: continue
+		
+		# 2. Search Filter (Fuzzy)
+		var score = 0
+		if not current_search_text.is_empty():
+			var ext_name = ext.get_display_name()
+			var ext_id = ext.get_id()
+			var author = ext.get_author()
+			
+			# Search in Name (Weight: High)
+			var match_name = SpotlightFuzzySearch.fuzzy_match(current_search_text, ext_name)
+			# Search in ID (Weight: Medium)
+			var match_id = SpotlightFuzzySearch.fuzzy_match(current_search_text, ext_id)
+			# Search in Author (Weight: Low)
+			var match_author = SpotlightFuzzySearch.fuzzy_match(current_search_text, author)
+			
+			var max_score = -1000000
+			if match_name.matched: max_score = max(max_score, match_name.score * 1.5) # Bonus for name
+			if match_id.matched: max_score = max(max_score, match_id.score)
+			if match_author.matched: max_score = max(max_score, match_author.score * 0.8) # Penalty for author
+			
+			if max_score > -1000000:
+				score = max_score
+			else:
+				continue # No match found
+		
+		filtered_extensions.append({
+			"ext": ext,
+			"score": score
+		})
+	
+	# Sort by score if searching
+	if not current_search_text.is_empty():
+		filtered_extensions.sort_custom(func(a, b): return a.score > b.score)
+	
+	for item in filtered_extensions:
+		_create_extension_card(item.ext)
 
 
 func _on_extension_toggled(enabled: bool, ext_id: String, card: PanelContainer):
@@ -479,3 +543,20 @@ func _update_shortcut_label():
 		parts.append(OS.get_keycode_string(keycode))
 		
 	shortcut_label.text = "+".join(parts)
+
+func _create_filter_btn(parent, text, mode, group, pressed=false):
+	var btn = Button.new()
+	btn.text = text
+	btn.toggle_mode = true
+	btn.button_group = group
+	btn.button_pressed = pressed
+	btn.pressed.connect(func(): _on_filter_changed(mode))
+	parent.add_child(btn)
+
+func _on_extension_search_changed(new_text):
+	current_search_text = new_text.to_lower()
+	_refresh_extensions_list()
+
+func _on_filter_changed(mode):
+	current_filter_mode = mode
+	_refresh_extensions_list()
