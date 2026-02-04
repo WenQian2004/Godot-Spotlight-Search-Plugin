@@ -101,9 +101,13 @@ func _unhandled_input(event):
 				main_window_instance.open_spotlight()
 				get_viewport().set_input_as_handled()
 
-# 重写此方法以确保在编辑器的任何地方都能捕获输入
-func _handles(object):
-	return true
+## 记录：
+## 该方法会捕获属性检查器（Inspector）中的处理
+## 问题原因：尝试捕获全局输入而遗留的错误实现
+## 插件捕获了godot引擎的请求，导致处理没有继续传递
+# # 重写此方法以确保在编辑器的任何地方都能捕获输入
+# func _handles(object):
+# 	return true
 
 func _forward_canvas_gui_input(event):
 	# 在 2D 编辑器中也能捕获快捷键
